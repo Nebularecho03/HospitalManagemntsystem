@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Virtual env
+.venv/
+
+# IDE
+.idea/
+
+# Local databases / load-test artifacts
+*.db
+*.db-journal
+load_test_*.db
+
+# OS
+.DS_Store

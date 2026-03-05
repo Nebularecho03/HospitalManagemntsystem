@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Operations Suite</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="ambient-bg"></div>
+
+    <main class="auth-shell" id="auth-shell">
+        <section class="auth-card">
+            <h1>Hospital Operations Suite</h1>
+            <p class="sub">Choose a portal and sign in with the role-specific account.</p>
+            <div class="login-tabs">
+                <button class="login-tab active" data-login-target="admin-login">Admin Login</button>
+                <button class="login-tab" data-login-target="clinical-login">Clinical Login</button>
+                <button class="login-tab" data-login-target="frontdesk-login">Front Desk Login</button>
+            </div>
+            <form id="admin-login" class="login-role-form active">
+                <label>Admin Username</label>
+                <input id="admin-login-username" type="text" value="admin" required>
+                <label>Password</label>
+                <input id="admin-login-password" type="password" value="admin123" required>
+                <button type="submit">Enter Admin Portal</button>
+            </form>
+            <form id="clinical-login" class="login-role-form">
+                <label>Doctor/Nurse Username</label>
+                <input id="clinical-login-username" type="text" placeholder="doctor1 or nurse1" required>
+                <label>Password</label>
+                <input id="clinical-login-password" type="password" placeholder="Enter password" required>
+                <button type="submit">Enter Clinical Portal</button>
+            </form>
+            <form id="frontdesk-login" class="login-role-form">
+                <label>Reception Username</label>
+                <input id="frontdesk-login-username" type="text" placeholder="reception1" required>
+                <label>Password</label>
+                <input id="frontdesk-login-password" type="password" placeholder="Enter password" required>
+                <button type="submit">Enter Front Desk Portal</button>
+            </form>
+            <p class="hint">Default accounts: <code>admin/admin123</code>, <code>doctor1/doctor123</code>, <code>nurse1/nurse123</code>, <code>reception1/reception123</code></p>
+            <p class="status" id="auth-status"></p>
+        </section>
+    </main>
+
+    <div class="app-shell hidden" id="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="logo">+</span>
+                <div>
+                    <h2>Hospital Suite</h2>
+                    <p id="current-user-label"></p>
+                </div>
+            </div>
+            <nav>
+                <button class="nav-btn active" data-section="dashboard">Dashboard</button>
+                <button class="nav-btn" data-section="patients">Patients</button>
+                <button class="nav-btn" data-section="doctors">Doctors & Slots</button>
+                <button class="nav-btn" data-section="appointments">Appointments</button>
+                <button class="nav-btn" data-section="clinical">Clinical</button>
+                <button class="nav-btn" data-section="labs">Lab Tests</button>
+                <button class="nav-btn" data-section="billing">Billing</button>
+                <button class="nav-btn" data-section="reminders">Reminders</button>
+                <button class="nav-btn" data-section="nurse-station" data-roles="Admin,Nurse">Nurse Station</button>
+                <button class="nav-btn" data-section="users" data-roles="Admin">Users</button>
+                <button class="nav-btn" data-section="audit" data-roles="Admin">Audit Logs</button>
+            </nav>
+            <button class="logout" id="logout-btn">Sign Out</button>
+        </aside>
+
+        <section class="content">
+            <header class="topbar">
+                <h1 id="section-title">Dashboard</h1>
+                <p id="global-status"></p>
+            </header>
+
+            <section class="panel active" id="dashboard">
+                <div class="cards" id="stats-cards"></div>
+                <article class="card" id="admin-analytics" data-roles="Admin">
+                    <div class="inline-controls">
+                        <h3>Admin Real-Time Analytics</h3>
+                        <select id="analytics-window">
+                            <option value="7">Last 7 days</option>
+                            <option value="14" selected>Last 14 days</option>
+                            <option value="30">Last 30 days</option>
+                        </select>
+                        <button id="refresh-analytics">Refresh</button>
+                        <span id="analytics-live-badge">Live</span>
+                    </div>
+                    <div class="grid two">
+                        <div>
+                            <h4>Daily Appointments</h4>
+                            <div id="chart-appointments" class="bar-chart"></div>
+                        </div>
+                        <div>
+                            <h4>Daily Revenue (Paid)</h4>
+                            <div id="chart-revenue" class="bar-chart"></div>
+                        </div>
+                        <div>
+                            <h4>Appointment Status Mix</h4>
+                            <div id="chart-status" class="bar-chart"></div>
+                        </div>
+                        <div>
+                            <h4>Triage Priority Mix</h4>
+                            <div id="chart-triage" class="bar-chart"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Top Doctor Workload</h4>
+                        <div id="chart-workload" class="bar-chart"></div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="panel" id="patients">
+                <div class="grid two">
+                    <article class="card">
+                        <h3>Search Patients</h3>
+                        <form id="patient-search-form" class="compact-form">
+                            <input id="search-name" placeholder="Name">
+                            <input id="search-phone" placeholder="Phone">
+                            <input id="search-min-age" type="number" placeholder="Min Age">
+                            <input id="search-max-age" type="number" placeholder="Max Age">
+                            <input id="search-last-visit" type="number" placeholder="Visited in last days">
+                            <button type="submit">Apply Filters</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Add Patient</h3>
+                        <form id="patient-form" class="compact-form">
+                            <input id="p-first" placeholder="First Name" required>
+                            <input id="p-last" placeholder="Last Name" required>
+                            <input id="p-age" type="number" placeholder="Age">
+                            <input id="p-gender" placeholder="Gender">
+                            <input id="p-phone" placeholder="Phone">
+                            <input id="p-email" type="email" placeholder="Email">
+                            <input id="p-address" placeholder="Address">
+                            <button type="submit">Create Patient</button>
+                        </form>
+                    </article>
+                </div>
+                <article class="card">
+                    <h3>Patient Directory</h3>
+                    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Phone</th><th>Email</th><th>Last Visit</th></tr></thead><tbody id="patients-table"></tbody></table></div>
+                </article>
+            </section>
+
+            <section class="panel" id="doctors">
+                <div class="grid two">
+                    <article class="card">
+                        <h3>Add Doctor</h3>
+                        <form id="doctor-form" class="compact-form">
+                            <input id="d-first" placeholder="First Name" required>
+                            <input id="d-last" placeholder="Last Name" required>
+                            <input id="d-specialization" placeholder="Specialization">
+                            <input id="d-phone" placeholder="Phone">
+                            <input id="d-email" type="email" placeholder="Email">
+                            <input id="d-availability" placeholder="Available Days">
+                            <button type="submit">Create Doctor</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Create Doctor Slot</h3>
+                        <form id="slot-form" class="compact-form">
+                            <select id="slot-doctor" required></select>
+                            <input id="slot-date" type="date" required>
+                            <input id="slot-time" type="time" required>
+                            <button type="submit">Add Slot</button>
+                        </form>
+                    </article>
+                </div>
+                <article class="card">
+                    <h3>Doctors</h3>
+                    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Specialization</th><th>Phone</th><th>Email</th></tr></thead><tbody id="doctors-table"></tbody></table></div>
+                </article>
+                <article class="card">
+                    <h3>Selected Doctor Slots</h3>
+                    <div class="inline-controls">
+                        <select id="slot-view-doctor"></select>
+                        <button id="load-slots-btn">Load Slots</button>
+                    </div>
+                    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Date</th><th>Time</th><th>Available</th></tr></thead><tbody id="slots-table"></tbody></table></div>
+                </article>
+            </section>
+
+            <section class="panel" id="appointments">
+                <div class="grid two">
+                    <article class="card">
+                        <h3>Schedule Appointment</h3>
+                        <form id="appointment-form" class="compact-form">
+                            <select id="a-patient" required></select>
+                            <select id="a-doctor" required></select>
+                            <input id="a-date" type="date" required>
+                            <input id="a-time" type="time" required>
+                            <input id="a-reason" placeholder="Reason">
+                            <button type="submit">Schedule</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Update Status</h3>
+                        <form id="appointment-status-form" class="compact-form">
+                            <input id="a-id" type="number" placeholder="Appointment ID" required>
+                            <select id="a-status" required>
+                                <option>Scheduled</option>
+                                <option>Completed</option>
+                                <option>Cancelled</option>
+                            </select>
+                            <button type="submit">Update</button>
+                        </form>
+                    </article>
+                </div>
+                <article class="card">
+                    <h3>Appointment Register</h3>
+                    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th><th>Reason</th></tr></thead><tbody id="appointments-table"></tbody></table></div>
+                </article>
+            </section>
+
+            <section class="panel" id="clinical">
+                <div class="grid three">
+                    <article class="card">
+                        <h3>Medical Record</h3>
+                        <form id="record-form" class="compact-form">
+                            <select id="mr-patient" required></select>
+                            <select id="mr-doctor" required></select>
+                            <input id="mr-diagnosis" placeholder="Diagnosis">
+                            <input id="mr-prescription" placeholder="Prescription Summary">
+                            <textarea id="mr-notes" placeholder="Notes"></textarea>
+                            <button type="submit">Save Record</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Prescription</h3>
+                        <form id="prescription-form" class="compact-form">
+                            <select id="pr-patient" required></select>
+                            <select id="pr-doctor" required></select>
+                            <input id="pr-medication" placeholder="Medication" required>
+                            <input id="pr-dosage" placeholder="Dosage">
+                            <input id="pr-frequency" placeholder="Frequency">
+                            <input id="pr-duration" type="number" placeholder="Duration days">
+                            <button type="submit">Add Prescription</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Attachment (URL)</h3>
+                        <form id="attachment-form" class="compact-form">
+                            <select id="at-patient" required></select>
+                            <input id="at-title" placeholder="Title" required>
+                            <input id="at-url" placeholder="File URL" required>
+                            <button type="submit">Attach</button>
+                        </form>
+                    </article>
+                </div>
+                <article class="card">
+                    <h3>Patient Clinical History</h3>
+                    <div class="inline-controls">
+                        <select id="clinical-view-patient"></select>
+                        <button id="load-clinical-btn">Load History</button>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <h4>Records</h4>
+                            <ul id="records-list" class="list"></ul>
+                        </div>
+                        <div>
+                            <h4>Prescriptions</h4>
+                            <ul id="prescriptions-list" class="list"></ul>
+                        </div>
+                        <div>
+                            <h4>Attachments</h4>
+                            <ul id="attachments-list" class="list"></ul>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="panel" id="labs">
+                <div class="grid two">
+                    <article class="card">
+                        <h3>Order Lab Test</h3>
+                        <form id="lab-order-form" class="compact-form">
+                            <select id="lt-patient" required></select>
+                            <select id="lt-doctor" required></select>
+                            <input id="lt-name" placeholder="Test Name" required>
+                            <button type="submit">Order Test</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Update Lab Result</h3>
+                        <form id="lab-result-form" class="compact-form">
+                            <input id="lr-id" type="number" placeholder="Lab Test ID" required>
+                            <textarea id="lr-text" placeholder="Result text"></textarea>
+                            <input id="lr-file" placeholder="Result file URL">
+                            <button type="submit">Mark Completed</button>
+                        </form>
+                    </article>
+                </div>
+                <article class="card">
+                    <h3>Patient Lab History</h3>
+                    <div class="inline-controls">
+                        <select id="lab-view-patient"></select>
+                        <button id="load-labs-btn">Load Lab Tests</button>
+                    </div>
+                    <ul id="labs-list" class="list"></ul>
+                </article>
+            </section>
+
+            <section class="panel" id="billing">
+                <div class="grid two">
+                    <article class="card">
+                        <h3>Create Invoice</h3>
+                        <form id="invoice-form" class="compact-form">
+                            <select id="iv-patient" required></select>
+                            <input id="iv-consult" type="number" step="0.01" placeholder="Consultation fee">
+                            <input id="iv-lab" type="number" step="0.01" placeholder="Lab fee">
+                            <input id="iv-pharmacy" type="number" step="0.01" placeholder="Pharmacy fee">
+                            <button type="submit">Generate Invoice</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Mark Invoice Paid</h3>
+                        <form id="invoice-pay-form" class="compact-form">
+                            <input id="iv-pay-id" type="number" placeholder="Invoice ID" required>
+                            <button type="submit">Mark Paid</button>
+                        </form>
+                    </article>
+                </div>
+                <article class="card">
+                    <h3>Invoices</h3>
+                    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Patient</th><th>Total</th><th>Status</th><th>Issued</th></tr></thead><tbody id="invoices-table"></tbody></table></div>
+                </article>
+            </section>
+
+            <section class="panel" id="reminders">
+                <div class="grid two">
+                    <article class="card">
+                        <h3>Queue Reminder</h3>
+                        <form id="reminder-form" class="compact-form">
+                            <select id="rm-patient" required></select>
+                            <input id="rm-appointment" type="number" placeholder="Appointment ID (optional)">
+                            <select id="rm-channel">
+                                <option>SMS</option>
+                                <option>Email</option>
+                            </select>
+                            <textarea id="rm-message" placeholder="Message" required></textarea>
+                            <input id="rm-when" type="datetime-local" placeholder="Schedule time">
+                            <button type="submit">Queue Reminder</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Reminder Queue</h3>
+                        <ul id="reminders-list" class="list"></ul>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel" id="users">
+                <article class="card">
+                    <h3>Create User (Admin)</h3>
+                    <form id="user-form" class="compact-form wide">
+                        <input id="u-username" placeholder="Username" required>
+                        <input id="u-password" type="password" placeholder="Password" required>
+                        <select id="u-role" required>
+                            <option>Admin</option>
+                            <option>Doctor</option>
+                            <option>Nurse</option>
+                            <option>Receptionist</option>
+                            <option>Patient</option>
+                        </select>
+                        <input id="u-fullname" placeholder="Full name">
+                        <input id="u-email" type="email" placeholder="Email">
+                        <button type="submit">Create User</button>
+                    </form>
+                </article>
+            </section>
+
+            <section class="panel" id="audit">
+                <article class="card">
+                    <h3>Audit Trail</h3>
+                    <button id="refresh-audit">Refresh Logs</button>
+                    <div class="table-wrap"><table><thead><tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Entity</th><th>ID</th><th>Details</th></tr></thead><tbody id="audit-table"></tbody></table></div>
+                </article>
+            </section>
+
+            <section class="panel" id="nurse-station">
+                <div class="grid three">
+                    <article class="card">
+                        <h3>Triage Intake</h3>
+                        <form id="triage-form" class="compact-form">
+                            <select id="tr-patient" required></select>
+                            <select id="tr-priority" required>
+                                <option>Low</option>
+                                <option>Medium</option>
+                                <option>High</option>
+                                <option>Critical</option>
+                            </select>
+                            <textarea id="tr-symptoms" placeholder="Symptoms"></textarea>
+                            <button type="submit">Add Triage Case</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Nursing Vitals</h3>
+                        <form id="nursing-note-form" class="compact-form">
+                            <select id="nn-patient" required></select>
+                            <input id="nn-bp" placeholder="Blood pressure e.g 120/80">
+                            <input id="nn-temp" type="number" step="0.1" placeholder="Temperature C">
+                            <input id="nn-pulse" type="number" placeholder="Pulse">
+                            <input id="nn-rr" type="number" placeholder="Respiratory rate">
+                            <input id="nn-spo2" type="number" placeholder="Oxygen saturation">
+                            <textarea id="nn-note" placeholder="Nursing note"></textarea>
+                            <button type="submit">Save Nursing Note</button>
+                        </form>
+                    </article>
+                    <article class="card">
+                        <h3>Nurse Task</h3>
+                        <form id="nurse-task-form" class="compact-form">
+                            <select id="nt-patient"></select>
+                            <input id="nt-title" placeholder="Task title" required>
+                            <textarea id="nt-details" placeholder="Task details"></textarea>
+                            <input id="nt-due" type="datetime-local">
+                            <button type="submit">Create Task</button>
+                        </form>
+                    </article>
+                </div>
+                <article class="card">
+                    <h3>Triage Queue</h3>
+                    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Patient</th><th>Priority</th><th>Status</th><th>Symptoms</th><th>Update</th></tr></thead><tbody id="triage-table"></tbody></table></div>
+                </article>
+                <article class="card">
+                    <h3>Nurse Tasks</h3>
+                    <ul id="nurse-tasks-list" class="list"></ul>
+                </article>
+            </section>
+        </section>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+services:
+  hms:
+    build: .
+    container_name: hms_app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./hospital.db:/app/hospital.db
+    restart: unless-stopped
